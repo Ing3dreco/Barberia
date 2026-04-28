@@ -2,17 +2,72 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Barbería</title>
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="./styles.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f0f0f;
+      color: #fff;
+      text-align: center;
+    }
+
+    header {
+      background: #1a1a1a;
+      padding: 20px;
+      font-size: 24px;
+      font-weight: bold;
+      border-bottom: 1px solid #333;
+    }
+
+    #app {
+      padding: 20px;
+    }
+
+    .card {
+      background: #1e1e1e;
+      margin: 10px auto;
+      padding: 15px;
+      border-radius: 10px;
+      max-width: 400px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      background: #00c853;
+      color: white;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #00a844;
+    }
+  </style>
 </head>
+
 <body>
 
-  <div id="app"></div>
+  <header>
+    💈 Barbería - Sistema de Clientes
+  </header>
 
-  <!-- JS -->
-  <script src="./app.js"></script>
+  <div id="app">
+    <p>Cargando datos...</p>
+  </div>
+
+  <!-- IMPORTANTE: tipo module -->
+  <script type="module" src="./app.js"></script>
+
+  <!-- DEBUG (puedes borrarlo luego) -->
+  <script>
+    console.log("HTML cargado correctamente");
+  </script>
 
 </body>
 </html>

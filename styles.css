@@ -614,3 +614,127 @@ body {
 .row-info { display: flex; flex-direction: column; gap: 2px; }
 .row-nombre { font-weight: 500; }
 .row-right { display: flex; align-items: center; }
+
+/* ===== BOTONES ADICIONALES ===== */
+.btn-danger {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  background: rgba(192,57,43,.15);
+  border: 1px solid rgba(192,57,43,.4);
+  color: #e74c3c;
+  transition: all .2s;
+}
+.btn-danger:hover {
+  background: rgba(192,57,43,.25);
+}
+
+.btn-sm {
+  padding: 7px 12px;
+  font-size: 13px;
+}
+
+/* ===== NAV DEL PERFIL ===== */
+.perfil-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.perfil-nav-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ===== BOTÓN ELIMINAR CORTE ===== */
+.btn-delete {
+  background: transparent;
+  border: 1px solid rgba(192,57,43,.3);
+  color: rgba(231,76,60,.7);
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 11px;
+  margin-left: 10px;
+  transition: all .2s;
+  flex-shrink: 0;
+}
+.btn-delete:hover {
+  background: rgba(192,57,43,.15);
+  border-color: rgba(231,76,60,.6);
+  color: #e74c3c;
+}
+
+.t-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ===== MODAL DE CONFIRMACIÓN ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn .2s ease;
+}
+
+.modal-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 32px 28px;
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 40px 80px rgba(0,0,0,.6);
+  animation: fadeUp .25s ease;
+}
+
+.modal-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  color: #e74c3c;
+}
+
+.modal-msg {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.modal-sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.modal-actions .btn-danger,
+.modal-actions .btn-ghost {
+  flex: 1;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}

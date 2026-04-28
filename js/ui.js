@@ -68,9 +68,9 @@ async function cargarHistorial(clienteId) {
   const { db } = await import("./supabase.js");
   const { data } = await db
     .from('cortes')
-    .select('created_at')
+    .select('fecha')
     .eq('cliente_id', clienteId)
-    .order('created_at', { ascending: false })
+    .order('fecha', { ascending: false })
     .limit(15);
 
   const hist = byId('historial');
@@ -80,7 +80,7 @@ async function cargarHistorial(clienteId) {
   }
 
   hist.innerHTML = data.map((c, i) => {
-    const fecha = new Date(c.created_at);
+    const fecha = new Date(c.fecha);
     const label = fecha.toLocaleDateString('es-CO', {
       day: '2-digit', month: 'short', year: 'numeric'
     });

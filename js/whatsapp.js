@@ -1,6 +1,16 @@
 import { state } from "./supabase.js";
 import { toast } from "./ui.js";
 
+// Emojis como Unicode escapado — evita corrupción al guardar/copiar el archivo
+const E = {
+  tijera:   '\u2702\uFE0F',   // ✂️
+  trofeo:   '\u{1F3C6}',      // 🏆
+  barbero:  '\u{1F488}',      // 💈
+  fiesta:   '\u{1F389}',      // 🎉
+  onda:     '\u{1F44B}',      // 👋
+  corazon:  '\u2764\uFE0F',   // ❤️
+};
+
 export function enviar() {
   const { activo, META } = state;
 
@@ -14,33 +24,35 @@ export function enviar() {
   let mensaje;
 
   if (premio) {
-    mensaje = `✂️ *Barbería*
-
-¡Hola ${activo.nombre}! 🎉
-
-Tienes un *premio disponible* 🏆
-Llevas ${activo.cortes_acumulados} cortes con nosotros.
-
-¡Ven a reclamarlo cuando quieras!
-Te esperamos 💈`;
+    mensaje = [
+      `${E.barbero} *Barbería*`,
+      '',
+      `${E.fiesta} Hola ${activo.nombre}!`,
+      '',
+      `Tienes un *premio disponible* ${E.trofeo}`,
+      `Llevas *${activo.cortes_acumulados} cortes* con nosotros.`,
+      '',
+      `Ven a reclamarlo cuando quieras ${E.corazon}`,
+      `Te esperamos!`,
+    ].join('\n');
   } else {
-    mensaje = `✂️ *Barbería*
-
-Hola ${activo.nombre},
-
-Llevas *${activo.cortes_acumulados} cortes* con nosotros.
-Te faltan solo *${faltan}* para ganar tu próximo premio 🏆
-
-¡Te esperamos pronto! 💈`;
+    mensaje = [
+      `${E.barbero} *BarberLeal*`,
+      '',
+      `Hola ${activo.nombre} ${E.onda}`,
+      '',
+      `Llevas *${activo.cortes_acumulados} cortes* con nosotros.`,
+      `Solo te faltan *${faltan}* para ganar tu proximo premio ${E.trofeo}`,
+      '',
+      `Te esperamos pronto! ${E.barbero}`,
+    ].join('\n');
   }
 
-  // número colombiano: asegurarse de que empiece con 57
-  const tel = activo.telefono.replace(/\D/g, ''); // quitar caracteres no numéricos
+  const tel    = activo.telefono.replace(/\D/g, '');
   const numero = tel.startsWith('57') ? tel : `57${tel}`;
+  const url    = `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
 
-  const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
   window.open(url, '_blank');
 }
 
-// exponer en window para onclick en HTML
 window.__whatsapp = { enviar };

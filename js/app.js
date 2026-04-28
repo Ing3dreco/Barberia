@@ -1,31 +1,31 @@
-// ===== PUNTO DE ENTRADA =====
-// Este archivo orquesta todos los módulos y arranca la app.
- 
 import { db, state } from "./supabase.js";
- 
-// importar todos los módulos para que registren sus handlers en window.*
+
 import "./auth.js";
 import "./ui.js";
 import "./clientes.js";
 import "./cortes.js";
 import "./whatsapp.js";
- 
+
 import { cargarClientes } from "./clientes.js";
-import { byId, mostrarTab } from "./ui.js";
- 
-// ─── función principal — se llama después de autenticar ─────────
+import { byId, mostrarTab, abrirPerfil, renderDetalle } from "./ui.js";
+
+// exponer state en window para acceso desde onclicks inline
+window.__state = state;
+
 export async function iniciarApp() {
   byId('view-login').style.display = 'none';
   byId('view-app').style.display   = 'block';
- 
   mostrarTab('clientes');
   await cargarClientes();
 }
- 
-// ─── sesión persistente — si ya hay sesión activa, entrar directo ─
+
+// actualizar perfil después de registrar corte desde el panel perfil
+window.__refreshPerfil = () => {
+  if (state.activo) abrirPerfil(state.activo.id);
+};
+
 (async () => {
   const { data: { session } } = await db.auth.getSession();
- 
   if (session) {
     state.user = session.user;
     iniciarApp();

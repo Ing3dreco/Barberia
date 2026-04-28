@@ -1,22 +1,19 @@
-function enviarWhatsApp(cliente, cortes) {
+function enviarWhatsApp(){
+  if(!activo?.telefono) return toast('Sin teléfono');
 
-  if (!cliente.telefono) return;
-
-  const meta = 10;
-
-  const faltan = meta - (cortes % meta);
+  const ciclo = activo.cortes_acumulados % META;
+  const faltan = ciclo === 0 ? 0 : META - ciclo;
 
   const mensaje = `✂️ BarberLeal
 
-Hola ${cliente.nombre},
+Hola ${activo.nombre},
 
-Llevas ${cortes} cortes acumulados.
-
-Te faltan ${faltan} para tu corte GRATIS 🏆
+Llevas ${activo.cortes_acumulados} cortes.
+Te faltan ${faltan} para tu premio 🏆
 
 Te esperamos.`;
 
-  const url = `https://wa.me/57${cliente.telefono}?text=${encodeURIComponent(mensaje)}`;
+  const url = `https://wa.me/57${activo.telefono}?text=${encodeURIComponent(mensaje)}`;
 
   window.open(url, '_blank');
 }

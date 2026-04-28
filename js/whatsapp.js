@@ -1,20 +1,17 @@
 import { state } from "./supabase.js";
 import { toast } from "./ui.js";
 
-// String.fromCodePoint() es compatible con todos los navegadores modernos
-// y no depende de cómo esté guardado el archivo ni del modo strict
 const E = {
-  tijera:  String.fromCodePoint(0x2702, 0xFE0F),  // ✂️
-  trofeo:  String.fromCodePoint(0x1F3C6),          // 🏆
-  barbero: String.fromCodePoint(0x1F488),          // 💈
-  fiesta:  String.fromCodePoint(0x1F389),          // 🎉
-  onda:    String.fromCodePoint(0x1F44B),          // 👋
-  corazon: String.fromCodePoint(0x2764, 0xFE0F),  // ❤️
+  tijera:  "✂️",
+  trofeo:  "🏆",
+  barbero: "💈",
+  fiesta:  "🎉",
+  onda:    "👋",
+  corazon: "❤️",
 };
 
 export function enviar() {
   const { activo, META } = state;
-
   if (!activo) return;
   if (!activo.telefono) { toast('Este cliente no tiene teléfono registrado'); return; }
 
@@ -52,7 +49,6 @@ export function enviar() {
   const tel    = activo.telefono.replace(/\D/g, '');
   const numero = tel.startsWith('57') ? tel : `57${tel}`;
   const url    = `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
-
   window.open(url, '_blank');
 }
 

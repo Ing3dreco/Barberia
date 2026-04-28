@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BarberLeal — Sistema de Fidelización</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #0e0c0a;
+    --surface: #1a1714;
+    --card: #201d19;
+    --border: #2e2a25;
+    --gold: #c9a84c;
+    --gold-light: #e8c96a;
+    --gold-dim: rgba(201,168,76,0.15);
+    --red: #c0392b;
+    --green: #27ae60;
+    --text: #f0ebe3;
+    --muted: #8a8078;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--gold);
+  }
+  .logo span { color: var(--text); }
+  #btn-logout {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 6px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all .2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  #btn-logout:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ── LOGIN ── */
+  #view-login {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.08) 0%, transparent 60%), var(--bg);
+  }
+  .login-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px 40px;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+  }
+  .login-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+  .login-box h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .login-box p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 32px;
+  }
+  .field { margin-bottom: 16px; text-align: left; }
+  .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+  .field input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .field input:focus { border-color: var(--gold); }
+  .btn-gold {
+    width: 100%;
+    background: var(--gold);
+    color: #0e0c0a;
+    border: none;
+    border-radius: 8px;
+    padding: 13px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background .2s, transform .1s;
+    margin-top: 8px;
+  }
+  .btn-gold:hover { background: var(--gold-light); }
+  .btn-gold:active { transform: scale(.98); }
+
+  /* ── MAIN APP ── */
+  #view-app { flex: 1; display: none; padding: 24px; max-width: 1100px; margin: 0 auto; width: 100%; }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 28px;
+  }
+  .tab {
+    flex: 1;
+    padding: 9px;
+    text-align: center;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    transition: all .2s;
+    border: none;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .tab.active { background: var(--gold); color: #0e0c0a; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    margin-bottom: 18px;
+  }
+
+  /* ── REGISTRO CORTE ── */
+  .search-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .search-row input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 11px 14px;
+    color: var(--text);
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .search-row input:focus { border-color: var(--gold); }
+  .btn-primary {
+    background: var(--gold);
+    color: #0e0c0a;
+    border: none;
+    border-radius: 8px;
+    padding: 11px 20px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background .2s;
+    font-family: 'DM Sans', sans-serif;
+    white-space: nowrap;
+  }
+  .btn-primary:hover { background: var(--gold-light); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    border-radius: 8px;
+    padding: 11px 20px;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all .2s;
+    font-family: 'DM Sans', sans-serif;
+    white-space: nowrap;
+  }
+  .btn-secondary:hover { background: var(--gold-dim); }
+  .btn-danger {
+    background: transparent;
+    color: #e74c3c;
+    border: 1px solid #c0392b;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all .2s;
+  }
+  .btn-danger:hover { background: rgba(192,57,43,0.15); }
+
+  /* ── CLIENTE RESULTADO ── */
+  .client-result {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    display: none;
+  }
+  .client-result.show { display: block; }
+  .client-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  .client-phone { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .progress-track {
+    background: var(--bg);
+    border-radius: 100px;
+    height: 10px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 100px;
+    transition: width .6s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ── CORTES DOTS ── */
+  .cuts-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .cut-dot {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all .3s;
+  }
+  .cut-dot.done {
+    background: var(--gold-dim);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+  .cut-dot.new {
+    animation: popIn .4s cubic-bezier(.4,0,.2,1);
+  }
+  @keyframes popIn {
+    0% { transform: scale(0); opacity: 0; }
+    70% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* ── BENEFICIO BADGE ── */
+  .benefit-badge {
+    background: linear-gradient(135deg, rgba(201,168,76,0.2), rgba(201,168,76,0.05));
+    border: 1px solid var(--gold);
+    border-radius: 10px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .benefit-badge .icon { font-size: 28px; }
+  .benefit-badge .text strong { color: var(--gold); font-size: 15px; display: block; }
+  .benefit-badge .text span { color: var(--muted); font-size: 12px; }
+
+  .actions-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 20px;
+    font-size: 14px;
+    z-index: 999;
+    transition: transform .3s cubic-bezier(.4,0,.2,1);
+    max-width: 320px;
+    text-align: center;
+    pointer-events: none;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  #toast.success { border-color: var(--green); color: var(--green); }
+  #toast.error { border-color: var(--red); color: #e74c3c; }
+  #toast.info { border-color: var(--gold); color: var(--gold); }
+
+  /* ── TABLE ── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 500;
+  }
+  td { padding: 13px 14px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge-gold { background: var(--gold-dim); color: var(--gold); border: 1px solid rgba(201,168,76,0.3); }
+  .badge-done { background: rgba(39,174,96,0.15); color: var(--green); border: 1px solid rgba(39,174,96,0.3); }
+
+  /* ── STATS ── */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+  }
+  .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--gold); letter-spacing: 2px; }
+  .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+
+  /* ── CONFIG ── */
+  .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 500px) { .config-grid { grid-template-columns: 1fr; } }
+  .config-field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+  .config-field input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 11px 14px;
+    color: var(--text);
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .config-field input:focus { border-color: var(--gold); }
+  .config-field.full { grid-column: 1 / -1; }
+
+  /* ── NUEVO CLIENTE FORM ── */
+  .new-client-form { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-top: 12px; }
+  .new-client-form.show { display: block; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  @media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
+  .form-row input {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .form-row input:focus { border-color: var(--gold); }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--gold);
+    border-radius: 16px;
+    padding: 36px;
+    max-width: 380px;
+    width: 100%;
+    text-align: center;
+    animation: modalIn .3s cubic-bezier(.4,0,.2,1);
+  }
+  @keyframes modalIn {
+    from { transform: scale(.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .modal .big-icon { font-size: 56px; margin-bottom: 12px; }
+  .modal h2 { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 3px; color: var(--gold); margin-bottom: 8px; }
+  .modal p { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+  .modal-btns { display: flex; gap: 10px; }
+  .modal-btns button { flex: 1; }
+
+  /* ── SEARCH DROPDOWN ── */
+  .search-dropdown {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    display: none;
+  }
+  .search-dropdown.show { display: block; }
+  .dropdown-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background .15s;
+    border-bottom: 1px solid var(--border);
+  }
+  .dropdown-item:last-child { border-bottom: none; }
+  .dropdown-item:hover { background: var(--surface); }
+  .dropdown-name { font-size: 14px; font-weight: 500; }
+  .dropdown-meta { font-size: 12px; color: var(--muted); }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
+  .empty-state .icon { font-size: 40px; margin-bottom: 12px; opacity: .5; }
+
+  /* ── SETUP SCREEN ── */
+  #view-setup {
+    flex: 1; display: none; align-items: center; justify-content: center; padding: 24px;
+  }
+  .setup-box {
+    background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 40px; max-width: 480px; width: 100%;
+  }
+  .setup-box h2 { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 2px; color: var(--gold); margin-bottom: 6px; }
+  .setup-box p { color: var(--muted); font-size: 13px; margin-bottom: 28px; }
+  .setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  @media (max-width: 480px) { .setup-grid { grid-template-columns: 1fr; } }
+  .setup-field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 7px; text-transform: uppercase; letter-spacing: 1px; }
+  .setup-field input {
+    width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 11px 14px; color: var(--text); font-size: 15px; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color .2s;
+  }
+  .setup-field input:focus { border-color: var(--gold); }
+  .setup-field.full { grid-column: 1 / -1; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="view-login">
+  <div class="login-box">
+    <div class="login-icon">✂️</div>
+    <h1>BarberLeal</h1>
+    <p>Panel de fidelización para tu barbería</p>
+    <div class="field">
+      <label>Correo</label>
+      <input type="email" id="login-email" placeholder="correo@barberia.com">
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" id="login-pass" placeholder="••••••••">
+    </div>
+    <button class="btn-gold" onclick="doLogin()">Entrar</button>
+  </div>
+</div>
+
+<!-- SETUP INICIAL -->
+<div id="view-setup" style="display:none">
+  <div class="setup-box">
+    <div style="font-size:40px;margin-bottom:14px">⚙️</div>
+    <h2>Configura tu Barbería</h2>
+    <p>Antes de empezar, define cómo funciona tu programa de puntos. Podrás cambiarlo después.</p>
+    <div class="setup-grid">
+      <div class="setup-field full">
+        <label>Nombre de la Barbería</label>
+        <input id="setup-nombre" type="text" placeholder="Ej: Barber Shop Don Carlos">
+      </div>
+      <div class="setup-field">
+        <label>Cortes para el beneficio</label>
+        <input id="setup-meta" type="number" min="1" max="50" value="10" placeholder="10">
+      </div>
+      <div class="setup-field">
+        <label>¿Qué se gana?</label>
+        <input id="setup-premio" type="text" placeholder="Ej: 1 corte gratis">
+      </div>
+    </div>
+    <button class="btn-gold" onclick="guardarConfig()">Guardar y Comenzar →</button>
+  </div>
+</div>
+
+<!-- APP PRINCIPAL -->
+<header id="main-header" style="display:none">
+  <div class="logo">Barber<span>Leal</span></div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <span id="header-barber" style="font-size:13px;color:var(--muted)"></span>
+    <button id="btn-logout" onclick="doLogout()">Salir</button>
+  </div>
+</header>
+
+<div id="view-app">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('registro')">✂️ Registrar Corte</button>
+    <button class="tab" onclick="showTab('clientes')">👥 Clientes</button>
+    <button class="tab" onclick="showTab('config')">⚙️ Configuración</button>
+  </div>
+
+  <!-- TAB: REGISTRO -->
+  <div id="tab-registro">
+    <div class="card">
+      <div class="card-title">REGISTRAR CORTE</div>
+      <div class="search-row">
+        <input id="search-input" type="text" placeholder="Buscar cliente por nombre o teléfono…" oninput="buscarCliente(this.value)" autocomplete="off">
+        <button class="btn-secondary" onclick="toggleNuevoCliente()">+ Nuevo</button>
+      </div>
+      <div class="search-dropdown" id="search-dropdown"></div>
+
+      <!-- Nuevo cliente form -->
+      <div class="new-client-form" id="new-client-form">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px">Registrar Cliente Nuevo</div>
+        <div class="form-row">
+          <input id="nc-nombre" type="text" placeholder="Nombre completo">
+          <input id="nc-tel" type="tel" placeholder="Teléfono">
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn-primary" onclick="crearCliente()" style="flex:1">Crear y Registrar Corte</button>
+          <button class="btn-secondary" onclick="toggleNuevoCliente()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resultado cliente -->
+    <div class="card client-result" id="client-result">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div class="client-name" id="res-nombre"></div>
+          <div class="client-phone" id="res-telefono"></div>
+        </div>
+        <button class="btn-danger" onclick="clearClientResult()">✕</button>
+      </div>
+
+      <div id="benefit-banner" class="benefit-badge" style="display:none">
+        <div class="icon">🏆</div>
+        <div class="text">
+          <strong id="benefit-title">¡Beneficio desbloqueado!</strong>
+          <span id="benefit-desc"></span>
+        </div>
+      </div>
+
+      <div class="progress-label">
+        <span id="progress-label-left">Cortes acumulados</span>
+        <span id="progress-label-right"></span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+      <div class="cuts-grid" id="cuts-grid"></div>
+
+      <div class="actions-row">
+        <button class="btn-primary" onclick="registrarCorte()" style="flex:1">✂️ Registrar Corte</button>
+        <button class="btn-secondary" onclick="canjearBeneficio()" id="btn-canjear" style="display:none">🏆 Canjear Premio</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: CLIENTES -->
+  <div id="tab-clientes" style="display:none">
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card"><div class="stat-value" id="st-total">—</div><div class="stat-label">Clientes</div></div>
+      <div class="stat-card"><div class="stat-value" id="st-cortes">—</div><div class="stat-label">Cortes Totales</div></div>
+      <div class="stat-card"><div class="stat-value" id="st-canjes">—</div><div class="stat-label">Premios Canjeados</div></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+        <div class="card-title" style="margin-bottom:0">LISTADO DE CLIENTES</div>
+        <input id="filter-clientes" type="text" placeholder="Filtrar…" oninput="filtrarTabla(this.value)"
+          style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;width:160px">
+      </div>
+      <div class="table-wrap">
+        <table id="tabla-clientes">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Teléfono</th>
+              <th>Cortes</th>
+              <th>Progreso</th>
+              <th>Premios</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-clientes">
+            <tr><td colspan="6"><div class="empty-state"><div class="icon">👥</div>Cargando clientes…</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: CONFIG -->
+  <div id="tab-config" style="display:none">
+    <div class="card">
+      <div class="card-title">CONFIGURACIÓN DEL PROGRAMA</div>
+      <div class="config-grid">
+        <div class="config-field full">
+          <label>Nombre de la Barbería</label>
+          <input id="cfg-nombre" type="text" placeholder="Mi Barbería">
+        </div>
+        <div class="config-field">
+          <label>Cortes para el beneficio</label>
+          <input id="cfg-meta" type="number" min="1" max="50">
+        </div>
+        <div class="config-field">
+          <label>Premio / Beneficio</label>
+          <input id="cfg-premio" type="text" placeholder="Ej: 1 corte gratis">
+        </div>
+      </div>
+      <div style="margin-top:20px">
+        <button class="btn-gold" onclick="guardarConfigUpdate()" style="width:auto;padding:12px 32px">Guardar Cambios</button>
+      </div>
+    </div>
+    <div class="card" style="border-color:rgba(192,57,43,0.3)">
+      <div class="card-title" style="color:#e74c3c">ZONA DE PELIGRO</div>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Estas acciones no se pueden deshacer.</p>
+      <button class="btn-danger" onclick="confirmarResetTodo()">🗑️ Borrar todos los datos de clientes</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BENEFICIO -->
+<div class="modal-overlay" id="modal-beneficio">
+  <div class="modal">
+    <div class="big-icon">🎉</div>
+    <h2>¡PREMIO!</h2>
+    <p id="modal-beneficio-text">Este cliente ha completado su tarjeta. ¿Confirmar canje?</p>
+    <div class="modal-btns">
+      <button class="btn-gold" onclick="confirmarCanje()">✓ Confirmar</button>
+      <button class="btn-secondary" onclick="cerrarModal('modal-beneficio')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal">
+    <div class="big-icon">⚠️</div>
+    <h2>¿CONFIRMAR?</h2>
+    <p id="modal-confirm-text"></p>
+    <div class="modal-btns">
+      <button class="btn-danger" id="modal-confirm-ok">Sí, continuar</button>
+      <button class="btn-secondary" onclick="cerrarModal('modal-confirm')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+// CONFIGURACIÓN SUPABASE — REEMPLAZAR ESTOS VALORES
+// ══════════════════════════════════════════════
+const SUPABASE_URL = 'TU_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'TU_SUPABASE_ANON_KEY';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ══ ESTADO GLOBAL ══
+let currentUser = null;
+let config = null;
+let clienteActivo = null;
+let todosClientes = [];
+let searchTimeout = null;
+
+// ══ INIT ══
+async function init() {
+  const { data: { session } } = await db.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    await postLogin();
+  }
+  db.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN') { currentUser = session.user; await postLogin(); }
+    if (event === 'SIGNED_OUT') { currentUser = null; showLogin(); }
+  });
+}
+
+async function postLogin() {
+  const cfg = await loadConfig();
+  if (!cfg) {
+    showView('setup');
+  } else {
+    config = cfg;
+    showView('app');
+    document.getElementById('header-barber').textContent = config.nombre_barberia || '';
+    await cargarClientes();
+  }
+}
+
+// ══ VISTAS ══
+function showView(v) {
+  document.getElementById('view-login').style.display = 'none';
+  document.getElementById('view-setup').style.display = 'none';
+  document.getElementById('view-app').style.display = 'none';
+  document.getElementById('main-header').style.display = 'none';
+  if (v === 'login') { document.getElementById('view-login').style.display = 'flex'; }
+  if (v === 'setup') { document.getElementById('view-setup').style.display = 'flex'; }
+  if (v === 'app') {
+    document.getElementById('view-app').style.display = 'block';
+    document.getElementById('main-header').style.display = 'flex';
+  }
+}
+function showLogin() { showView('login'); }
+
+// ══ AUTH ══
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  if (!email || !pass) return toast('Completa los campos', 'error');
+  const { error } = await db.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    // Intentar registro automático si no existe
+    const { error: signUpError } = await db.auth.signUp({ email, password: pass });
+    if (signUpError) return toast('Error: ' + signUpError.message, 'error');
+    toast('Cuenta creada. Verifica tu correo si es necesario.', 'info');
+  }
+}
+async function doLogout() {
+  await db.auth.signOut();
+  clearClientResult();
+  todosClientes = [];
+  config = null;
+}
+
+// ══ CONFIG ══
+async function loadConfig() {
+  const { data, error } = await db.from('config').select('*').eq('user_id', currentUser.id).single();
+  if (error || !data) return null;
+  return data;
+}
+async function guardarConfig() {
+  const nombre = document.getElementById('setup-nombre').value.trim();
+  const meta = parseInt(document.getElementById('setup-meta').value);
+  const premio = document.getElementById('setup-premio').value.trim();
+  if (!nombre || !meta || !premio) return toast('Completa todos los campos', 'error');
+  const { error } = await db.from('config').upsert({ user_id: currentUser.id, nombre_barberia: nombre, meta_cortes: meta, premio });
+  if (error) return toast('Error al guardar: ' + error.message, 'error');
+  config = { nombre_barberia: nombre, meta_cortes: meta, premio };
+  toast('¡Configuración guardada!', 'success');
+  showView('app');
+  document.getElementById('header-barber').textContent = nombre;
+  await cargarClientes();
+}
+async function guardarConfigUpdate() {
+  const nombre = document.getElementById('cfg-nombre').value.trim();
+  const meta = parseInt(document.getElementById('cfg-meta').value);
+  const premio = document.getElementById('cfg-premio').value.trim();
+  if (!nombre || !meta || !premio) return toast('Completa todos los campos', 'error');
+  const { error } = await db.from('config').upsert({ user_id: currentUser.id, nombre_barberia: nombre, meta_cortes: meta, premio });
+  if (error) return toast('Error: ' + error.message, 'error');
+  config = { ...config, nombre_barberia: nombre, meta_cortes: meta, premio };
+  document.getElementById('header-barber').textContent = nombre;
+  toast('Configuración actualizada ✓', 'success');
+  if (clienteActivo) renderCliente(clienteActivo);
+}
+
+// ══ TABS ══
+function showTab(tab) {
+  ['registro','clientes','config'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', ['registro','clientes','config'][i] === tab);
+  });
+  if (tab === 'clientes') { renderTablaClientes(); renderStats(); }
+  if (tab === 'config') { loadConfigForm(); }
+}
+
+function loadConfigForm() {
+  if (!config) return;
+  document.getElementById('cfg-nombre').value = config.nombre_barberia || '';
+  document.getElementById('cfg-meta').value = config.meta_cortes || 10;
+  document.getElementById('cfg-premio').value = config.premio || '';
+}
+
+// ══ CLIENTES ══
+async function cargarClientes() {
+  const { data, error } = await db.from('clientes').select('*').eq('user_id', currentUser.id).order('nombre');
+  if (error) return toast('Error cargando clientes', 'error');
+  todosClientes = data || [];
+}
+
+async function buscarCliente(q) {
+  const dd = document.getElementById('search-dropdown');
+  clearTimeout(searchTimeout);
+  if (q.length < 2) { dd.classList.remove('show'); dd.innerHTML = ''; return; }
+  searchTimeout = setTimeout(() => {
+    const results = todosClientes.filter(c =>
+      c.nombre.toLowerCase().includes(q.toLowerCase()) ||
+      (c.telefono || '').includes(q)
+    ).slice(0, 6);
+    if (!results.length) {
+      dd.innerHTML = '<div class="dropdown-item"><span class="dropdown-name" style="color:var(--muted)">Sin resultados — crea un cliente nuevo</span></div>';
+    } else {
+      dd.innerHTML = results.map(c => `
+        <div class="dropdown-item" onclick="seleccionarCliente('${c.id}')">
+          <span class="dropdown-name">${c.nombre}</span>
+          <span class="dropdown-meta">${c.telefono || ''} · ${c.cortes_acumulados} corte${c.cortes_acumulados !== 1 ? 's' : ''}</span>
+        </div>
+      `).join('');
+    }
+    dd.classList.add('show');
+  }, 200);
+}
+
+function seleccionarCliente(id) {
+  const c = todosClientes.find(x => x.id === id);
+  if (!c) return;
+  clienteActivo = c;
+  document.getElementById('search-dropdown').classList.remove('show');
+  document.getElementById('search-input').value = c.nombre;
+  renderCliente(c);
+  document.getElementById('new-client-form').classList.remove('show');
+}
+
+function renderCliente(c) {
+  const meta = config.meta_cortes;
+  const cortes = c.cortes_acumulados % meta; // ciclo actual
+  const pct = Math.min((cortes / meta) * 100, 100);
+  const tienebeneficio = c.cortes_acumulados > 0 && c.cortes_acumulados % meta === 0;
+
+  document.getElementById('res-nombre').textContent = c.nombre;
+  document.getElementById('res-telefono').textContent = c.telefono || 'Sin teléfono';
+  document.getElementById('progress-label-left').textContent = `Ciclo actual: ${cortes} de ${meta}`;
+  document.getElementById('progress-label-right').textContent = `${c.premios_canjeados || 0} premios canjeados`;
+  document.getElementById('progress-fill').style.width = pct + '%';
+
+  // Dots
+  const grid = document.getElementById('cuts-grid');
+  grid.innerHTML = '';
+  for (let i = 0; i < meta; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'cut-dot' + (i < cortes ? ' done' : '');
+    dot.textContent = i < cortes ? '✂️' : '';
+    grid.appendChild(dot);
+  }
+
+  // Beneficio
+  const banner = document.getElementById('benefit-banner');
+  const btnCanje = document.getElementById('btn-canjear');
+  if (tienebeneficio) {
+    banner.style.display = 'flex';
+    document.getElementById('benefit-title').textContent = '¡Premio disponible!';
+    document.getElementById('benefit-desc').textContent = config.premio;
+    btnCanje.style.display = 'inline-block';
+  } else {
+    banner.style.display = 'none';
+    btnCanje.style.display = 'none';
+  }
+
+  document.getElementById('client-result').classList.add('show');
+}
+
+async function registrarCorte() {
+  if (!clienteActivo) return;
+  const meta = config.meta_cortes;
+  const nuevosCortes = clienteActivo.cortes_acumulados + 1;
+  const { error } = await db.from('clientes').update({ cortes_acumulados: nuevosCortes }).eq('id', clienteActivo.id);
+  if (error) return toast('Error al registrar: ' + error.message, 'error');
+
+  clienteActivo.cortes_acumulados = nuevosCortes;
+  // Actualizar en array local
+  const idx = todosClientes.findIndex(x => x.id === clienteActivo.id);
+  if (idx >= 0) todosClientes[idx].cortes_acumulados = nuevosCortes;
+
+  // Animación del nuevo dot
+  renderCliente(clienteActivo);
+  const dots = document.querySelectorAll('.cut-dot.done');
+  if (dots.length) dots[dots.length - 1].classList.add('new');
+
+  toast(`✂️ Corte registrado — ${nuevosCortes % meta}/${meta}`, 'success');
+
+  if (nuevosCortes % meta === 0) {
+    setTimeout(() => toast(`🏆 ¡${clienteActivo.nombre} ganó un premio!`, 'info'), 1000);
+  }
+}
+
+async function canjearBeneficio() {
+  document.getElementById('modal-beneficio-text').textContent =
+    `${clienteActivo.nombre} ganará: "${config.premio}". ¿Confirmar canje?`;
+  document.getElementById('modal-beneficio').classList.add('show');
+}
+
+async function confirmarCanje() {
+  cerrarModal('modal-beneficio');
+  const nuevosCanjes = (clienteActivo.premios_canjeados || 0) + 1;
+  const { error } = await db.from('clientes').update({ premios_canjeados: nuevosCanjes }).eq('id', clienteActivo.id);
+  if (error) return toast('Error: ' + error.message, 'error');
+  clienteActivo.premios_canjeados = nuevosCanjes;
+  const idx = todosClientes.findIndex(x => x.id === clienteActivo.id);
+  if (idx >= 0) todosClientes[idx].premios_canjeados = nuevosCanjes;
+  renderCliente(clienteActivo);
+  toast(`🏆 Premio canjeado para ${clienteActivo.nombre} ✓`, 'success');
+}
+
+function toggleNuevoCliente() {
+  const form = document.getElementById('new-client-form');
+  form.classList.toggle('show');
+  if (form.classList.contains('show')) {
+    document.getElementById('nc-nombre').focus();
+    document.getElementById('search-dropdown').classList.remove('show');
+  }
+}
+
+async function crearCliente() {
+  const nombre = document.getElementById('nc-nombre').value.trim();
+  const telefono = document.getElementById('nc-tel').value.trim();
+  if (!nombre) return toast('Ingresa el nombre del cliente', 'error');
+  const { data, error } = await db.from('clientes').insert([{
+    user_id: currentUser.id,
+    nombre,
+    telefono,
+    cortes_acumulados: 1,
+    premios_canjeados: 0
+  }]).select().single();
+  if (error) return toast('Error: ' + error.message, 'error');
+  todosClientes.push(data);
+  todosClientes.sort((a,b) => a.nombre.localeCompare(b.nombre));
+  clienteActivo = data;
+  document.getElementById('new-client-form').classList.remove('show');
+  document.getElementById('nc-nombre').value = '';
+  document.getElementById('nc-tel').value = '';
+  document.getElementById('search-input').value = nombre;
+  renderCliente(data);
+  toast(`✅ ${nombre} registrado con 1 corte`, 'success');
+}
+
+function clearClientResult() {
+  document.getElementById('client-result').classList.remove('show');
+  document.getElementById('search-input').value = '';
+  clienteActivo = null;
+}
+
+// ══ TABLA CLIENTES ══
+function renderTablaClientes(filtro = '') {
+  const tbody = document.getElementById('tbody-clientes');
+  let lista = todosClientes;
+  if (filtro) {
+    lista = lista.filter(c =>
+      c.nombre.toLowerCase().includes(filtro.toLowerCase()) ||
+      (c.telefono || '').includes(filtro)
+    );
+  }
+  if (!lista.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="icon">👥</div>No hay clientes aún</div></td></tr>';
+    return;
+  }
+  const meta = config?.meta_cortes || 10;
+  tbody.innerHTML = lista.map(c => {
+    const ciclo = c.cortes_acumulados % meta;
+    const tieneP = c.cortes_acumulados > 0 && ciclo === 0;
+    return `
+    <tr>
+      <td><strong>${c.nombre}</strong></td>
+      <td style="color:var(--muted)">${c.telefono || '—'}</td>
+      <td><span class="badge badge-gold">${c.cortes_acumulados}</span></td>
+      <td style="color:var(--muted);font-size:13px">${tieneP ? '🏆 Premio listo' : `${ciclo}/${meta}`}</td>
+      <td>${c.premios_canjeados ? `<span class="badge badge-done">${c.premios_canjeados}</span>` : '<span style="color:var(--muted)">—</span>'}</td>
+      <td>
+        <button class="btn-danger" onclick="confirmarEliminar('${c.id}','${c.nombre.replace(/'/g,"\\'")}')">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filtrarTabla(v) { renderTablaClientes(v); }
+
+function renderStats() {
+  document.getElementById('st-total').textContent = todosClientes.length;
+  document.getElementById('st-cortes').textContent = todosClientes.reduce((s,c) => s + c.cortes_acumulados, 0);
+  document.getElementById('st-canjes').textContent = todosClientes.reduce((s,c) => s + (c.premios_canjeados || 0), 0);
+}
+
+// ══ ELIMINAR CLIENTE ══
+function confirmarEliminar(id, nombre) {
+  document.getElementById('modal-confirm-text').textContent = `¿Eliminar a ${nombre} y todos sus datos?`;
+  document.getElementById('modal-confirm-ok').onclick = () => eliminarCliente(id);
+  document.getElementById('modal-confirm').classList.add('show');
+}
+async function eliminarCliente(id) {
+  cerrarModal('modal-confirm');
+  const { error } = await db.from('clientes').delete().eq('id', id);
+  if (error) return toast('Error al eliminar', 'error');
+  todosClientes = todosClientes.filter(c => c.id !== id);
+  if (clienteActivo?.id === id) clearClientResult();
+  renderTablaClientes(document.getElementById('filter-clientes').value);
+  renderStats();
+  toast('Cliente eliminado', 'info');
+}
+
+// ══ RESET TODO ══
+function confirmarResetTodo() {
+  document.getElementById('modal-confirm-text').textContent = 'Se borrarán TODOS los clientes y sus cortes. Esta acción es irreversible.';
+  document.getElementById('modal-confirm-ok').onclick = resetTodo;
+  document.getElementById('modal-confirm').classList.add('show');
+}
+async function resetTodo() {
+  cerrarModal('modal-confirm');
+  const { error } = await db.from('clientes').delete().eq('user_id', currentUser.id);
+  if (error) return toast('Error: ' + error.message, 'error');
+  todosClientes = [];
+  clearClientResult();
+  renderTablaClientes();
+  renderStats();
+  toast('Todos los datos fueron eliminados', 'info');
+}
+
+// ══ MODAL / TOAST ══
+function cerrarModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); });
+});
+let toastTimeout;
+function toast(msg, type = 'info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + type;
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ══ START ══
+init();
+</script>
+</body>
+</html>

@@ -3,6 +3,19 @@ import { state } from "./supabase.js";
 // ─── helpers ───────────────────────────────────────────────────
 export const byId = id => document.getElementById(id);
 
+const TZ = 'America/Bogota';
+
+function formatFecha(isoString) {
+  const d = new Date(isoString);
+  const label = d.toLocaleDateString('es-CO', {
+    timeZone: TZ, day: '2-digit', month: 'short', year: 'numeric'
+  });
+  const hora = d.toLocaleTimeString('es-CO', {
+    timeZone: TZ, hour: '2-digit', minute: '2-digit'
+  });
+  return `${label} · ${hora}`;
+}
+
 let toastTimer = null;
 export function toast(msg) {
   const t = byId('toast');
@@ -17,42 +30,37 @@ export function mostrarTab(tab) {
     byId(`panel-${t}`).style.display = t === tab ? 'block' : 'none';
     byId(`tab-${t}`).classList.toggle('active', t === tab);
   });
+  byId('panel-perfil').style.display = 'none';
   if (tab === 'lista') renderLista();
 }
 
-// ─── detalle de cliente activo ──────────────────────────────────
+// ─── detalle de cliente activo (tab Clientes) ───────────────────
 export function renderDetalle() {
   const { activo, META } = state;
   if (!activo) return;
 
   byId('detalle').style.display = 'block';
-  byId('d-nombre').textContent = activo.nombre;
-  byId('d-tel').textContent    = activo.telefono
+  byId('d-nombre').textContent  = activo.nombre;
+  byId('d-tel').textContent     = activo.telefono
     ? `📱 ${activo.telefono}`
     : 'Sin teléfono';
 
-  const ciclo = activo.cortes_acumulados % META;
-  const pct   = (ciclo / META) * 100;
+  const ciclo  = activo.cortes_acumulados % META;
+  const pct    = (ciclo / META) * 100;
   const premio = ciclo === 0 && activo.cortes_acumulados > 0;
 
-  // barra de progreso
-  byId('fill').style.width = pct + '%';
+  byId('fill').style.width   = pct + '%';
   byId('p-text').textContent = premio
     ? '¡Premio disponible!'
     : `${ciclo} / ${META} cortes`;
 
-  // badge estado
   const badge = byId('d-badge');
-  if (premio) {
-    badge.innerHTML = '<span class="badge premio">🏆 ¡Premio!</span>';
-  } else {
-    badge.innerHTML = `<span class="badge ok">${activo.cortes_acumulados} total</span>`;
-  }
+  badge.innerHTML = premio
+    ? '<span class="badge premio">🏆 ¡Premio!</span>'
+    : `<span class="badge ok">${activo.cortes_acumulados} total</span>`;
 
-  // botón canjear — solo activo si hay premio
   byId('btn-canjear').disabled = !premio;
 
-  // dots
   const dots = byId('dots');
   dots.innerHTML = '';
   for (let i = 0; i < META; i++) {
@@ -60,40 +68,77 @@ export function renderDetalle() {
     dots.innerHTML += `<div class="dot ${on ? 'on' : ''}">${on ? '✂️' : ''}</div>`;
   }
 
-  // historial
-  cargarHistorial(activo.id);
+  cargarHistorial(activo.id, 'historial');
 }
 
-async function cargarHistorial(clienteId) {
+// ─── perfil completo desde la Lista ────────────────────────────
+export function abrirPerfil(id) {
+  const cliente = state.clientes.find(x => x.id === id);
+  if (!cliente) return;
+
+  state.activo = cliente;
+  const { META } = state;
+  const ciclo  = cliente.cortes_acumulados % META;
+  const pct    = (ciclo / META) * 100;
+  const premio = ciclo === 0 && cliente.cortes_acumulados > 0;
+
+  byId('panel-lista').style.display  = 'none';
+  byId('panel-perfil').style.display = 'block';
+
+  byId('p-nombre').textContent  = cliente.nombre;
+  byId('p-avatar').textContent  = cliente.nombre.charAt(0).toUpperCase();
+  byId('p-total-num').textContent  = cliente.cortes_acumulados;
+  byId('p-premios-num').textContent = cliente.premios_canjeados || 0;
+  byId('p-tel').textContent     = cliente.telefono ? `📱 ${cliente.telefono}` : 'Sin teléfono';
+
+  byId('p-badge').innerHTML = premio
+    ? '<span class="badge premio">🏆 ¡Premio disponible!</span>'
+    : `<span class="badge ok">${ciclo}/${META} en ciclo actual</span>`;
+
+  byId('p-fill').style.width  = pct + '%';
+  byId('p-ptext').textContent = premio
+    ? '¡Listo para canjear!'
+    : `Faltan ${META - ciclo} cortes`;
+
+  const dots = byId('p-dots');
+  dots.innerHTML = '';
+  for (let i = 0; i < META; i++) {
+    const on = i < ciclo;
+    dots.innerHTML += `<div class="dot ${on ? 'on' : ''}">${on ? '✂️' : ''}</div>`;
+  }
+
+  byId('p-btn-canjear').disabled = !premio;
+
+  cargarHistorial(cliente.id, 'p-historial');
+}
+
+export function volverALista() {
+  byId('panel-perfil').style.display = 'none';
+  byId('panel-lista').style.display  = 'block';
+}
+
+// ─── historial compartido ───────────────────────────────────────
+async function cargarHistorial(clienteId, elId) {
   const { db } = await import("./supabase.js");
   const { data } = await db
     .from('cortes')
     .select('fecha')
     .eq('cliente_id', clienteId)
     .order('fecha', { ascending: false })
-    .limit(15);
+    .limit(20);
 
-  const hist = byId('historial');
+  const hist = byId(elId);
   if (!data || data.length === 0) {
     hist.innerHTML = '<div class="t-empty">Sin cortes registrados aún</div>';
     return;
   }
 
-  hist.innerHTML = data.map((c, i) => {
-    const fecha = new Date(c.fecha);
-    const label = fecha.toLocaleDateString('es-CO', {
-      day: '2-digit', month: 'short', year: 'numeric'
-    });
-    const hora = fecha.toLocaleTimeString('es-CO', {
-      hour: '2-digit', minute: '2-digit'
-    });
-    return `
-      <div class="t-item">
-        <span>✂️ Corte #${data.length - i}</span>
-        <span class="muted">${label} · ${hora}</span>
-      </div>
-    `;
-  }).join('');
+  hist.innerHTML = data.map((c, i) => `
+    <div class="t-item">
+      <span>✂️ Corte #${data.length - i}</span>
+      <span class="muted">${formatFecha(c.fecha)}</span>
+    </div>
+  `).join('');
 }
 
 // ─── lista de todos los clientes ───────────────────────────────
@@ -110,13 +155,20 @@ export function renderLista() {
     const ciclo  = c.cortes_acumulados % META;
     const premio = ciclo === 0 && c.cortes_acumulados > 0;
     return `
-      <div class="row" onclick="window.__clientes.seleccionar('${c.id}')">
-        <div>${c.nombre}</div>
-        <div class="muted">${premio ? '🏆 Premio' : `${ciclo}/${META}`}</div>
+      <div class="row" onclick="window.__ui.abrirPerfil('${c.id}')">
+        <div class="row-info">
+          <div class="row-nombre">${c.nombre}</div>
+          <div class="muted">${c.telefono || 'Sin teléfono'}</div>
+        </div>
+        <div class="row-right">
+          ${premio
+            ? '<span class="badge premio">🏆 Premio</span>'
+            : `<span class="muted">${ciclo}/${META}</span>`
+          }
+        </div>
       </div>
     `;
   }).join('');
 }
 
-// exponer en window para el tab de lista (onclick en HTML)
-window.__ui = { mostrarTab };
+window.__ui = { mostrarTab, abrirPerfil, volverALista };

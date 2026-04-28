@@ -1,13 +1,21 @@
-async function login(email, password) {
-  const { data, error } = await db.auth.signInWithPassword({
-    email,
-    password
-  });
+async function login(){
+  const email = document.getElementById('email').value;
+  const pass = document.getElementById('pass').value;
 
-  if (error) {
-    console.error(error);
+  let { data, error } = await db.auth.signInWithPassword({ email, password: pass });
+
+  if(error){
+    const r = await db.auth.signUp({ email, password: pass });
+    if(r.error){ toast('Error al crear cuenta'); return; }
+    toast('Cuenta creada, inicia sesión');
     return;
   }
 
-  currentUser = data.user;
+  user = data.user;
+  iniciarApp();
+}
+
+async function logout(){
+  await db.auth.signOut();
+  location.reload();
 }

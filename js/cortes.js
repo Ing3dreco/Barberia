@@ -1,24 +1,39 @@
-async function registrarCorte() {
-  if (!clienteActivo) return;
+async function registrarCorte(){
+  if(!activo) return;
 
-  const nuevosCortes = clienteActivo.cortes_acumulados + 1;
+  const nuevos = activo.cortes_acumulados + 1;
 
-  // actualizar cliente
   await db.from('clientes')
-    .update({ cortes_acumulados: nuevosCortes })
-    .eq('id', clienteActivo.id);
+    .update({ cortes_acumulados: nuevos })
+    .eq('id', activo.id);
 
-  // 🔥 HISTORIAL
   await db.from('cortes').insert([{
-    cliente_id: clienteActivo.id,
-    user_id: currentUser.id,
-    fecha: new Date().toISOString()
+    cliente_id: activo.id,
+    user_id: user.id
   }]);
 
-  clienteActivo.cortes_acumulados = nuevosCortes;
+  activo.cortes_acumulados = nuevos;
 
-  // WhatsApp
-  enviarWhatsApp(clienteActivo, nuevosCortes);
+  const i = clientes.findIndex(x => x.id === activo.id);
+  if(i >= 0) clientes[i].cortes_acumulados = nuevos;
 
-  renderCliente(clienteActivo);
+  renderDetalle();
+  renderLista();
+
+  toast('Corte registrado');
+}
+
+async function canjear(){
+  const n = (activo.premios_canjeados || 0) + 1;
+
+  await db.from('clientes')
+    .update({ premios_canjeados: n })
+    .eq('id', activo.id);
+
+  activo.premios_canjeados = n;
+
+  renderDetalle();
+  renderLista();
+
+  toast('Premio canjeado');
 }

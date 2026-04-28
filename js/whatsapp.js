@@ -14,7 +14,7 @@ export function enviar() {
   let mensaje;
 
   if (premio) {
-    mensaje = `✂️ *BarberLeal*
+    mensaje = `✂️ *Barbería*
 
 ¡Hola ${activo.nombre}! 🎉
 
@@ -24,7 +24,7 @@ Llevas ${activo.cortes_acumulados} cortes con nosotros.
 ¡Ven a reclamarlo cuando quieras!
 Te esperamos 💈`;
   } else {
-    mensaje = `✂️ *BarberLeal*
+    mensaje = `✂️ *Barbería*
 
 Hola ${activo.nombre},
 

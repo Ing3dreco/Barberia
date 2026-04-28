@@ -10,14 +10,13 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
- 
+
   <!-- ===== LOGIN ===== -->
   <div id="view-login">
     <div class="login-card">
       <div class="login-logo">💈</div>
       <h1>BarberLeal</h1>
       <p>Sistema de fidelización de clientes</p>
- 
       <div class="field">
         <label for="email">Correo electrónico</label>
         <input id="email" type="email" placeholder="barbero@email.com" autocomplete="email">
@@ -26,42 +25,41 @@
         <label for="pass">Contraseña</label>
         <input id="pass" type="password" placeholder="••••••••" autocomplete="current-password">
       </div>
- 
       <button class="btn" id="btn-login" onclick="window.__auth.login()">Entrar</button>
       <div id="login-error" class="login-error"></div>
     </div>
   </div>
- 
+
   <!-- ===== APP ===== -->
   <div id="view-app">
- 
+
     <header class="header">
       <div class="container inner">
         <div class="brand">💈 <span>Barber</span>Leal</div>
         <button class="btn-ghost" onclick="window.__auth.logout()">Salir</button>
       </div>
     </header>
- 
+
     <div class="container">
- 
+
       <!-- TABS -->
       <div class="tabs">
         <button class="tab active" id="tab-clientes" onclick="window.__ui.mostrarTab('clientes')">👤 Clientes</button>
-        <button class="tab" id="tab-nuevo" onclick="window.__ui.mostrarTab('nuevo')">➕ Nuevo</button>
-        <button class="tab" id="tab-lista" onclick="window.__ui.mostrarTab('lista')">📋 Lista</button>
+        <button class="tab" id="tab-nuevo"    onclick="window.__ui.mostrarTab('nuevo')">➕ Nuevo</button>
+        <button class="tab" id="tab-lista"    onclick="window.__ui.mostrarTab('lista')">📋 Lista</button>
       </div>
- 
-      <!-- TAB: BUSCAR CLIENTE -->
+
+      <!-- ── TAB: BUSCAR CLIENTE ── -->
       <div id="panel-clientes">
         <div class="card">
           <div class="search">
-            <input id="q" type="text" placeholder="Buscar cliente por nombre…" oninput="window.__clientes.buscar(this.value)" autocomplete="off">
+            <input id="q" type="text" placeholder="Buscar cliente por nombre…"
+              oninput="window.__clientes.buscar(this.value)" autocomplete="off">
             <button class="btn" onclick="window.__ui.mostrarTab('nuevo')">+ Nuevo</button>
           </div>
           <div id="dd" class="dropdown"></div>
         </div>
- 
-        <!-- DETALLE CLIENTE -->
+
         <div id="detalle" style="display:none">
           <div class="card">
             <div class="client-header">
@@ -71,7 +69,6 @@
               </div>
               <div id="d-badge"></div>
             </div>
- 
             <div class="progress">
               <div class="progress-label">
                 <span>Progreso del ciclo</span>
@@ -79,25 +76,21 @@
               </div>
               <div class="track"><div class="fill" id="fill"></div></div>
             </div>
- 
             <div class="grid" id="dots"></div>
- 
             <div class="actions">
-              <button class="btn" onclick="window.__cortes.registrarCorte()">✂️ Registrar Corte</button>
+              <button class="btn"       onclick="window.__cortes.registrarCorte()">✂️ Registrar Corte</button>
               <button class="btn-ghost" onclick="window.__cortes.canjear()" id="btn-canjear">🏆 Canjear Premio</button>
               <button class="btn-ghost" onclick="window.__whatsapp.enviar()">💬 WhatsApp</button>
             </div>
           </div>
- 
-          <!-- HISTORIAL -->
           <div class="card">
             <div class="section-title">Historial de cortes</div>
             <div id="historial" class="timeline"></div>
           </div>
         </div>
       </div>
- 
-      <!-- TAB: NUEVO CLIENTE -->
+
+      <!-- ── TAB: NUEVO CLIENTE ── -->
       <div id="panel-nuevo" style="display:none">
         <div class="card">
           <div class="section-title">Registrar nuevo cliente</div>
@@ -110,27 +103,79 @@
             <input id="n-tel" type="tel" placeholder="Ej: 3001234567">
           </div>
           <div class="actions">
-            <button class="btn" onclick="window.__clientes.crear()">Crear Cliente</button>
+            <button class="btn"       onclick="window.__clientes.crear()">Crear Cliente</button>
             <button class="btn-ghost" onclick="window.__ui.mostrarTab('clientes')">Cancelar</button>
           </div>
         </div>
       </div>
- 
-      <!-- TAB: LISTA -->
+
+      <!-- ── TAB: LISTA ── -->
       <div id="panel-lista" style="display:none">
         <div class="card">
           <div class="section-title">Todos los clientes</div>
           <div id="lista"></div>
         </div>
       </div>
- 
+
+      <!-- ── PERFIL (dentro del tab Lista) ── -->
+      <div id="panel-perfil" style="display:none">
+
+        <button class="btn-back" onclick="window.__ui.volverALista()">
+          ← Volver a la lista
+        </button>
+
+        <div class="card perfil-header-card">
+          <div class="perfil-top">
+            <div class="perfil-avatar" id="p-avatar"></div>
+            <div class="perfil-info">
+              <div class="title" id="p-nombre"></div>
+              <div class="muted" id="p-tel"></div>
+            </div>
+            <div id="p-badge"></div>
+          </div>
+          <div class="perfil-stats">
+            <div class="stat-box">
+              <div class="stat-num" id="p-total-num"></div>
+              <div class="stat-label">cortes totales</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num" id="p-premios-num"></div>
+              <div class="stat-label">premios canjeados</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Ciclo actual</div>
+          <div class="progress">
+            <div class="progress-label">
+              <span>Progreso</span>
+              <span id="p-ptext" class="muted"></span>
+            </div>
+            <div class="track"><div class="fill" id="p-fill"></div></div>
+          </div>
+          <div class="grid" id="p-dots"></div>
+          <div class="actions" style="margin-top:4px">
+            <button class="btn"       onclick="window.__cortes.registrarCorte().then(()=>window.__ui.abrirPerfil(window.__state?.activo?.id))">✂️ Registrar Corte</button>
+            <button class="btn-ghost" onclick="window.__cortes.canjear()" id="p-btn-canjear">🏆 Canjear Premio</button>
+            <button class="btn-ghost" onclick="window.__whatsapp.enviar()">💬 WhatsApp</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Historial de cortes</div>
+          <div id="p-historial" class="timeline"></div>
+        </div>
+
+      </div>
+
     </div>
   </div>
- 
+
   <!-- TOAST -->
   <div id="toast"></div>
- 
+
   <script type="module" src="./js/app.js"></script>
- 
+
 </body>
 </html>

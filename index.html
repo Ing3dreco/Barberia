@@ -14,7 +14,7 @@
   <!-- ===== LOGIN ===== -->
   <div id="view-login">
     <div class="login-card">
-      <div class="login-logo">💈</div>
+      <div class="login-logo">&#128136;</div>
       <h1>BarberLeal</h1>
       <p>Sistema de fidelización de clientes</p>
       <div class="field">
@@ -35,7 +35,7 @@
 
     <header class="header">
       <div class="container inner">
-        <div class="brand">💈 <span>Barber</span>Leal</div>
+        <div class="brand">&#128136; <span>Barber</span>Leal</div>
         <button class="btn-ghost" onclick="window.__auth.logout()">Salir</button>
       </div>
     </header>
@@ -44,9 +44,9 @@
 
       <!-- TABS -->
       <div class="tabs">
-        <button class="tab active" id="tab-clientes" onclick="window.__ui.mostrarTab('clientes')">👤 Clientes</button>
-        <button class="tab" id="tab-nuevo"    onclick="window.__ui.mostrarTab('nuevo')">➕ Nuevo</button>
-        <button class="tab" id="tab-lista"    onclick="window.__ui.mostrarTab('lista')">📋 Lista</button>
+        <button class="tab active" id="tab-clientes" onclick="window.__ui.mostrarTab('clientes')">Clientes</button>
+        <button class="tab"        id="tab-nuevo"    onclick="window.__ui.mostrarTab('nuevo')">+ Nuevo</button>
+        <button class="tab"        id="tab-lista"    onclick="window.__ui.mostrarTab('lista')">Lista</button>
       </div>
 
       <!-- ── TAB: BUSCAR CLIENTE ── -->
@@ -78,9 +78,9 @@
             </div>
             <div class="grid" id="dots"></div>
             <div class="actions">
-              <button class="btn"       onclick="window.__cortes.registrarCorte()">✂️ Registrar Corte</button>
-              <button class="btn-ghost" onclick="window.__cortes.canjear()" id="btn-canjear">🏆 Canjear Premio</button>
-              <button class="btn-ghost" onclick="window.__whatsapp.enviar()">💬 WhatsApp</button>
+              <button class="btn"       onclick="window.__cortes.registrarCorte()">Registrar Corte</button>
+              <button class="btn-ghost" onclick="window.__cortes.canjear()" id="btn-canjear">Canjear Premio</button>
+              <button class="btn-ghost" onclick="window.__whatsapp.enviar()">WhatsApp</button>
             </div>
           </div>
           <div class="card">
@@ -120,55 +120,95 @@
       <!-- ── PERFIL (dentro del tab Lista) ── -->
       <div id="panel-perfil" style="display:none">
 
-        <button class="btn-back" onclick="window.__ui.volverALista()">
-          ← Volver a la lista
-        </button>
-
-        <div class="card perfil-header-card">
-          <div class="perfil-top">
-            <div class="perfil-avatar" id="p-avatar"></div>
-            <div class="perfil-info">
-              <div class="title" id="p-nombre"></div>
-              <div class="muted" id="p-tel"></div>
-            </div>
-            <div id="p-badge"></div>
-          </div>
-          <div class="perfil-stats">
-            <div class="stat-box">
-              <div class="stat-num" id="p-total-num"></div>
-              <div class="stat-label">cortes totales</div>
-            </div>
-            <div class="stat-box">
-              <div class="stat-num" id="p-premios-num"></div>
-              <div class="stat-label">premios canjeados</div>
-            </div>
+        <div class="perfil-nav">
+          <button class="btn-back" onclick="window.__ui.volverALista()">&#8592; Lista</button>
+          <div class="perfil-nav-actions">
+            <button class="btn-ghost btn-sm" onclick="window.__ui.toggleEdicion(true)">&#9998; Editar</button>
+            <button class="btn-danger btn-sm" onclick="window.__ui.confirmarEliminarCliente()">&#128465; Eliminar</button>
           </div>
         </div>
 
-        <div class="card">
-          <div class="section-title">Ciclo actual</div>
-          <div class="progress">
-            <div class="progress-label">
-              <span>Progreso</span>
-              <span id="p-ptext" class="muted"></span>
+        <!-- Vista normal del perfil -->
+        <div id="perfil-view">
+          <div class="card perfil-header-card">
+            <div class="perfil-top">
+              <div class="perfil-avatar" id="p-avatar"></div>
+              <div class="perfil-info">
+                <div class="title" id="p-nombre"></div>
+                <div class="muted" id="p-tel"></div>
+              </div>
+              <div id="p-badge"></div>
             </div>
-            <div class="track"><div class="fill" id="p-fill"></div></div>
+            <div class="perfil-stats">
+              <div class="stat-box">
+                <div class="stat-num" id="p-total-num"></div>
+                <div class="stat-label">cortes totales</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-num" id="p-premios-num"></div>
+                <div class="stat-label">premios canjeados</div>
+              </div>
+            </div>
           </div>
-          <div class="grid" id="p-dots"></div>
-          <div class="actions" style="margin-top:4px">
-            <button class="btn"       onclick="window.__cortes.registrarCorte().then(()=>window.__ui.abrirPerfil(window.__state?.activo?.id))">✂️ Registrar Corte</button>
-            <button class="btn-ghost" onclick="window.__cortes.canjear()" id="p-btn-canjear">🏆 Canjear Premio</button>
-            <button class="btn-ghost" onclick="window.__whatsapp.enviar()">💬 WhatsApp</button>
+
+          <div class="card">
+            <div class="section-title">Ciclo actual</div>
+            <div class="progress">
+              <div class="progress-label">
+                <span>Progreso</span>
+                <span id="p-ptext" class="muted"></span>
+              </div>
+              <div class="track"><div class="fill" id="p-fill"></div></div>
+            </div>
+            <div class="grid" id="p-dots"></div>
+            <div class="actions" style="margin-top:4px">
+              <button class="btn"       onclick="window.__cortes.registrarCorteYRefrescar()">Registrar Corte</button>
+              <button class="btn-ghost" onclick="window.__cortes.canjear()" id="p-btn-canjear">Canjear Premio</button>
+              <button class="btn-ghost" onclick="window.__whatsapp.enviar()">WhatsApp</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="section-title">Historial de cortes</div>
+            <div id="p-historial" class="timeline"></div>
           </div>
         </div>
 
-        <div class="card">
-          <div class="section-title">Historial de cortes</div>
-          <div id="p-historial" class="timeline"></div>
+        <!-- Formulario de edición -->
+        <div id="perfil-edit" style="display:none">
+          <div class="card">
+            <div class="section-title">Editar cliente</div>
+            <div class="field">
+              <label>Nombre completo</label>
+              <input id="edit-nombre" type="text" placeholder="Nombre">
+            </div>
+            <div class="field">
+              <label>Teléfono (sin +57)</label>
+              <input id="edit-telefono" type="tel" placeholder="3001234567">
+            </div>
+            <div class="actions">
+              <button class="btn" id="btn-guardar-edit" onclick="window.__ui.guardarEdicion()">Guardar cambios</button>
+              <button class="btn-ghost" onclick="window.__ui.toggleEdicion(false)">Cancelar</button>
+            </div>
+          </div>
         </div>
 
       </div>
+      <!-- fin panel-perfil -->
 
+    </div>
+  </div>
+
+  <!-- ===== MODAL CONFIRMACIÓN ===== -->
+  <div id="modal-confirm" class="modal-overlay" style="display:none" onclick="if(event.target===this)window.__ui.cerrarModal()">
+    <div class="modal-box">
+      <div class="modal-icon">&#9888;</div>
+      <div class="modal-msg"  id="confirm-msg"></div>
+      <div class="modal-sub"  id="confirm-sub"></div>
+      <div class="modal-actions">
+        <button class="btn-danger" id="confirm-ok">Sí, eliminar</button>
+        <button class="btn-ghost"  onclick="window.__ui.cerrarModal()">Cancelar</button>
+      </div>
     </div>
   </div>
 

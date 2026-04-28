@@ -1,14 +1,15 @@
 import { state } from "./supabase.js";
 import { toast } from "./ui.js";
 
-// Emojis como Unicode escapado — evita corrupción al guardar/copiar el archivo
+// String.fromCodePoint() es compatible con todos los navegadores modernos
+// y no depende de cómo esté guardado el archivo ni del modo strict
 const E = {
-  tijera:   '\u2702\uFE0F',   // ✂️
-  trofeo:   '\u{1F3C6}',      // 🏆
-  barbero:  '\u{1F488}',      // 💈
-  fiesta:   '\u{1F389}',      // 🎉
-  onda:     '\u{1F44B}',      // 👋
-  corazon:  '\u2764\uFE0F',   // ❤️
+  tijera:  String.fromCodePoint(0x2702, 0xFE0F),  // ✂️
+  trofeo:  String.fromCodePoint(0x1F3C6),          // 🏆
+  barbero: String.fromCodePoint(0x1F488),          // 💈
+  fiesta:  String.fromCodePoint(0x1F389),          // 🎉
+  onda:    String.fromCodePoint(0x1F44B),          // 👋
+  corazon: String.fromCodePoint(0x2764, 0xFE0F),  // ❤️
 };
 
 export function enviar() {
@@ -37,7 +38,7 @@ export function enviar() {
     ].join('\n');
   } else {
     mensaje = [
-      `${E.barbero} *BarberLeal*`,
+      `${E.barbero} *Barbería*`,
       '',
       `Hola ${activo.nombre} ${E.onda}`,
       '',

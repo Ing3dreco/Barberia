@@ -3,71 +3,134 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Barbería</title>
-
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0f0f0f;
-      color: #fff;
-      text-align: center;
-    }
-
-    header {
-      background: #1a1a1a;
-      padding: 20px;
-      font-size: 24px;
-      font-weight: bold;
-      border-bottom: 1px solid #333;
-    }
-
-    #app {
-      padding: 20px;
-    }
-
-    .card {
-      background: #1e1e1e;
-      margin: 10px auto;
-      padding: 15px;
-      border-radius: 10px;
-      max-width: 400px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    }
-
-    button {
-      padding: 10px 15px;
-      border: none;
-      border-radius: 5px;
-      background: #00c853;
-      color: white;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    button:hover {
-      background: #00a844;
-    }
-  </style>
+  <title>BarberLeal — Sistema de Fidelización</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
-
-  <header>
-    💈 Barbería - Sistema de Clientes
-  </header>
-
-  <div id="app">
-    <p>Cargando datos...</p>
+ 
+  <!-- ===== LOGIN ===== -->
+  <div id="view-login">
+    <div class="login-card">
+      <div class="login-logo">💈</div>
+      <h1>BarberLeal</h1>
+      <p>Sistema de fidelización de clientes</p>
+ 
+      <div class="field">
+        <label for="email">Correo electrónico</label>
+        <input id="email" type="email" placeholder="barbero@email.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label for="pass">Contraseña</label>
+        <input id="pass" type="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+ 
+      <button class="btn" id="btn-login" onclick="window.__auth.login()">Entrar</button>
+      <div id="login-error" class="login-error"></div>
+    </div>
   </div>
-
-  <!-- IMPORTANTE: tipo module -->
-  <script type="module" src="./app.js"></script>
-
-  <!-- DEBUG (puedes borrarlo luego) -->
-  <script>
-    console.log("HTML cargado correctamente");
-  </script>
-
+ 
+  <!-- ===== APP ===== -->
+  <div id="view-app">
+ 
+    <header class="header">
+      <div class="container inner">
+        <div class="brand">💈 <span>Barber</span>Leal</div>
+        <button class="btn-ghost" onclick="window.__auth.logout()">Salir</button>
+      </div>
+    </header>
+ 
+    <div class="container">
+ 
+      <!-- TABS -->
+      <div class="tabs">
+        <button class="tab active" id="tab-clientes" onclick="window.__ui.mostrarTab('clientes')">👤 Clientes</button>
+        <button class="tab" id="tab-nuevo" onclick="window.__ui.mostrarTab('nuevo')">➕ Nuevo</button>
+        <button class="tab" id="tab-lista" onclick="window.__ui.mostrarTab('lista')">📋 Lista</button>
+      </div>
+ 
+      <!-- TAB: BUSCAR CLIENTE -->
+      <div id="panel-clientes">
+        <div class="card">
+          <div class="search">
+            <input id="q" type="text" placeholder="Buscar cliente por nombre…" oninput="window.__clientes.buscar(this.value)" autocomplete="off">
+            <button class="btn" onclick="window.__ui.mostrarTab('nuevo')">+ Nuevo</button>
+          </div>
+          <div id="dd" class="dropdown"></div>
+        </div>
+ 
+        <!-- DETALLE CLIENTE -->
+        <div id="detalle" style="display:none">
+          <div class="card">
+            <div class="client-header">
+              <div>
+                <div class="title" id="d-nombre"></div>
+                <div class="muted" id="d-tel"></div>
+              </div>
+              <div id="d-badge"></div>
+            </div>
+ 
+            <div class="progress">
+              <div class="progress-label">
+                <span>Progreso del ciclo</span>
+                <span id="p-text" class="muted"></span>
+              </div>
+              <div class="track"><div class="fill" id="fill"></div></div>
+            </div>
+ 
+            <div class="grid" id="dots"></div>
+ 
+            <div class="actions">
+              <button class="btn" onclick="window.__cortes.registrarCorte()">✂️ Registrar Corte</button>
+              <button class="btn-ghost" onclick="window.__cortes.canjear()" id="btn-canjear">🏆 Canjear Premio</button>
+              <button class="btn-ghost" onclick="window.__whatsapp.enviar()">💬 WhatsApp</button>
+            </div>
+          </div>
+ 
+          <!-- HISTORIAL -->
+          <div class="card">
+            <div class="section-title">Historial de cortes</div>
+            <div id="historial" class="timeline"></div>
+          </div>
+        </div>
+      </div>
+ 
+      <!-- TAB: NUEVO CLIENTE -->
+      <div id="panel-nuevo" style="display:none">
+        <div class="card">
+          <div class="section-title">Registrar nuevo cliente</div>
+          <div class="field">
+            <label>Nombre completo</label>
+            <input id="n-nombre" type="text" placeholder="Ej: Carlos Rodríguez">
+          </div>
+          <div class="field">
+            <label>Teléfono (sin +57)</label>
+            <input id="n-tel" type="tel" placeholder="Ej: 3001234567">
+          </div>
+          <div class="actions">
+            <button class="btn" onclick="window.__clientes.crear()">Crear Cliente</button>
+            <button class="btn-ghost" onclick="window.__ui.mostrarTab('clientes')">Cancelar</button>
+          </div>
+        </div>
+      </div>
+ 
+      <!-- TAB: LISTA -->
+      <div id="panel-lista" style="display:none">
+        <div class="card">
+          <div class="section-title">Todos los clientes</div>
+          <div id="lista"></div>
+        </div>
+      </div>
+ 
+    </div>
+  </div>
+ 
+  <!-- TOAST -->
+  <div id="toast"></div>
+ 
+  <script type="module" src="./js/app.js"></script>
+ 
 </body>
 </html>

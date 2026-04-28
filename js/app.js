@@ -1,11 +1,16 @@
-async function init() {
+async function iniciarApp(){
+  document.getElementById('view-login').style.display = 'none';
+  document.getElementById('view-app').style.display = 'block';
 
-  const { data } = await db.auth.getSession();
-
-  if (data.session) {
-    currentUser = data.session.user;
-    await cargarClientes();
-  }
+  await cargarClientes();
 }
 
-init();
+// sesión persistente
+(async ()=>{
+  const { data:{ session } } = await db.auth.getSession();
+
+  if(session){
+    user = session.user;
+    iniciarApp();
+  }
+})();
